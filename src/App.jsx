@@ -233,9 +233,9 @@ function AppInner() {
     try {
       async function loadFixtures() {
       const res = await fetch(
-  `https://corsproxy.io/?https://v3.football.api-sports.io/fixtures?league=7902&season=2026`,
+  `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://v3.football.api-sports.io/fixtures?league=7902&season=2026`)}`,
   { headers:{ "x-apisports-key": "600b973df5cc8ade2b784dd379fd9f2f" } }
-  );
+);
 
   if (!res.ok) {
     throw new Error(`HTTP ${res.status}`);
