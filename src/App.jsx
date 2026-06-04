@@ -233,12 +233,8 @@ function AppInner() {
     try {
       async function loadFixtures() {
       const res = await fetch(
-    "https://api.football-data.org/v4/competitions/WC/matches",
-    {
-      headers: {
-        "X-Auth-Token": "cb2aad09e0824f5ba015bea82a562e2b"
-      }
-    }
+  `https://corsproxy.io/?https://v3.football.api-sports.io/fixtures?league=7902&season=2026`,
+  { headers:{ "x-apisports-key": "600b973df5cc8ade2b784dd379fd9f2f" } }
   );
 
   if (!res.ok) {
