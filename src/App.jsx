@@ -22,9 +22,6 @@ const FIREBASE_CONFIG = {
   appId: "1:605521131334:web:4b72708d888e9d4ae4d747",
 };
 
-const API_TOKEN = "cb2aad09e0824f5ba015bea82a562e2b";
-const COMPETITION = "WC";
-
 const ALLOWED_EMAILS = [
   "an.boudhaim@web.de","marco@gmail.com","lukas@gmail.com","jonas@gmail.com",
   "fabian@gmail.com","tim@gmail.com","dani@gmail.com",
@@ -226,56 +223,49 @@ function AppInner() {
 
   // Fetch WM results
   const fetchMatches = useCallback(async () => {
-    // BUG FIX #6: useRef verhindert Race Condition bei schnellen Klicks
-    if (fetchingRef.current) return;
-    fetchingRef.current = true;
-    setApiStatus("loading");
-    try {
-      async function loadFixtures() {
-      const res = await fetch(
-  `https://api.allorigins.win/raw?url=${encodeURIComponent(`https://v3.football.api-sports.io/fixtures?league=7902&season=2026`)}`,
-  { headers:{ "x-apisports-key": "600b973df5cc8ade2b784dd379fd9f2f" } }
-);
+  if (fetchingRef.current) return;
+  fetchingRef.current = true;
+  setApiStatus("loading");
+  try {
+    const url = `https://v3.football.api-sports.io/fixtures?league=7902&season=2026`;
+    const res = await fetch(
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+      { headers: { "x-apisports-key": "600b973df5cc8ade2b784dd379fd9f2f" } }
+    );
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const json = await res.json();
+    if (!json.response?.length) throw new Error("Keine Spiele in API-Antwort");
 
-  if (!res.ok) {
-    throw new Error(`HTTP ${res.status}`);
-  }
+    const list = json.response.map(f => ({
+      id:       f.fixture.id,
+      date:     f.fixture.date,
+      venue:    f.fixture.venue?.name || "",
+      group:    f.league.round || "Gruppenphase",
+      home:     f.teams.home.name,
+      homeFlag: teamFlag(f.teams.home.name),
+      homeLogo: f.teams.home.logo,
+      away:     f.teams.away.name,
+      awayFlag: teamFlag(f.teams.away.name),
+      awayLogo: f.teams.away.logo,
+      status:   f.fixture.status.short,
+      elapsed:  f.fixture.status.elapsed,
+      result:   ["FT","AET","PEN"].includes(f.fixture.status.short)
+        ? { home: f.goals.home ?? 0, away: f.goals.away ?? 0 } : null,
+      live:     ["1H","2H","HT","ET","P"].includes(f.fixture.status.short)
+        ? { home: f.goals.home ?? 0, away: f.goals.away ?? 0 } : null,
+    }));
 
-  const data = await res.json();
-
-  return data.matches.map(match => ({
-    id: match.id,
-    home: match.homeTeam?.name,
-    away: match.awayTeam?.name,
-    date: match.utcDate,
-    status: match.status,
-    scoreHome: match.score?.fullTime?.home,
-    scoreAway: match.score?.fullTime?.away
-  }));
-}
-
-      await setDoc(doc(db,"data","matches"), { list, updatedAt: serverTimestamp() });
-      setApiStatus("ok");
-      setLastSync(new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}));
-    } catch(e) {
-      console.error("API fetch failed:", e);
+    await setDoc(doc(db,"data","matches"), { list, updatedAt: serverTimestamp() });
+    setApiStatus("ok");
+    setLastSync(new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}));
+  } catch(e) {
+    console.error("API fetch failed:", e);
     setApiStatus("error");
     notify(`Fehler: ${e.message}`, "error");
-      // BUG FIX #9: User informieren wenn API-Limit erreicht
-      if (e.message.includes("429")) notify("⚠️ API-Limit erreicht, versuche es später", "error");
-    } finally {
-      fetchingRef.current = false;
-    }
-  }, []); // eslint-disable-line
-
-  useEffect(() => {
-    if (!authUser) return;
-    fetchMatches();
-    const hasLive = matches.some(m => m.live);
-    const iv = setInterval(fetchMatches, hasLive ? 30000 : 60000);
-    return () => clearInterval(iv);
-  }, [authUser]); // eslint-disable-line
-
+  } finally {
+    fetchingRef.current = false;
+  }
+}, []); // eslint-disable-line
   // Save match tip
   const saveTip = async (match, home, away) => {
     if (!authUser || !profile) return;
