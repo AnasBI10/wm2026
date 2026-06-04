@@ -231,34 +231,32 @@ function AppInner() {
     fetchingRef.current = true;
     setApiStatus("loading");
     try {
+      async function loadFixtures() {
       const res = await fetch(
-        `https://${API_HOST}/fixtures?league=${WM_LEAGUE}&season=${WM_SEASON}`,
-        { headers:{ "x-apisports-key":API_KEY } }
-      );
-      // BUG FIX #9: HTTP-Fehler abfangen (z.B. 429 Rate Limit)
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      if (!json.response?.length) throw new Error("Keine Spiele in API-Antwort");
+    "https://api.football-data.org/v4/competitions/WC/matches",
+    {
+      headers: {
+        "X-Auth-Token": API_TOKEN
+      }
+    }
+  );
 
-      const list = json.response.map(f => ({
-        id:       f.fixture.id,
-        date:     f.fixture.date,
-        venue:    f.fixture.venue?.name || "",
-        group:    f.league.round || "Gruppenphase",
-        home:     f.teams.home.name,
-        homeLogo: f.teams.home.logo,
-        homeFlag: teamFlag(f.teams.home.name),
-        away:     f.teams.away.name,
-        awayLogo: f.teams.away.logo,
-        awayFlag: teamFlag(f.teams.away.name),
-        status:   f.fixture.status.short,
-        elapsed:  f.fixture.status.elapsed,
-        // BUG FIX #10: goals können null sein wenn Spiel noch nicht begonnen hat
-        result:   ["FT","AET","PEN"].includes(f.fixture.status.short)
-          ? { home: f.goals.home ?? 0, away: f.goals.away ?? 0 } : null,
-        live:     ["1H","2H","HT","ET","P"].includes(f.fixture.status.short)
-          ? { home: f.goals.home ?? 0, away: f.goals.away ?? 0 } : null,
-      }));
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status}`);
+  }
+
+  const data = await res.json();
+
+  return data.matches.map(match => ({
+    id: match.id,
+    home: match.homeTeam?.name,
+    away: match.awayTeam?.name,
+    date: match.utcDate,
+    status: match.status,
+    scoreHome: match.score?.fullTime?.home,
+    scoreAway: match.score?.fullTime?.away
+  }));
+}
 
       await setDoc(doc(db,"data","matches"), { list, updatedAt: serverTimestamp() });
       setApiStatus("ok");
