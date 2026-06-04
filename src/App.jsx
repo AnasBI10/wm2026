@@ -22,10 +22,8 @@ const FIREBASE_CONFIG = {
   appId: "1:605521131334:web:4b72708d888e9d4ae4d747",
 };
 
-const API_KEY = "600b973df5cc8ade2b784dd379fd9f2f";  
-const API_HOST  = "v3.football.api-sports.io";
-const WM_LEAGUE = 1;
-const WM_SEASON = 2026;
+const API_TOKEN = "cb2aad09e0824f5ba015bea82a562e2b";
+const COMPETITION = "WC";
 
 const ALLOWED_EMAILS = [
   "an.boudhaim@web.de","marco@gmail.com","lukas@gmail.com","jonas@gmail.com",
