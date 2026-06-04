@@ -236,7 +236,7 @@ function AppInner() {
     "https://api.football-data.org/v4/competitions/WC/matches",
     {
       headers: {
-        "X-Auth-Token": API_TOKEN
+        "X-Auth-Token": "cb2aad09e0824f5ba015bea82a562e2b"
       }
     }
   );
