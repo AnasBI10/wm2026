@@ -24,7 +24,7 @@ const FIREBASE_CONFIG = {
 
 const API_KEY = "600b973df5cc8ade2b784dd379fd9f2f";  
 const API_HOST  = "v3.football.api-sports.io";
-const WM_LEAGUE = 1;
+const WM_LEAGUE = 7902;
 const WM_SEASON = 2026;
 
 const ALLOWED_EMAILS = [
