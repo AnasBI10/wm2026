@@ -235,7 +235,7 @@ function AppInner() {
     try {
       const res = await fetch(
         `https://${API_HOST}/fixtures?league=${WM_LEAGUE}&season=${WM_SEASON}`,
-        { headers:{ "x-rapidapi-key":API_KEY, "x-rapidapi-host":API_HOST } }
+        { headers:{ "x-apisports-key":API_KEY } }
       );
       // BUG FIX #9: HTTP-Fehler abfangen (z.B. 429 Rate Limit)
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
