@@ -259,7 +259,8 @@ function AppInner() {
       setLastSync(new Date().toLocaleTimeString("de-DE",{hour:"2-digit",minute:"2-digit"}));
     } catch(e) {
       console.error("API fetch failed:", e);
-      setApiStatus("error");
+    setApiStatus("error");
+    notify(`Fehler: ${e.message}`, "error");
       // BUG FIX #9: User informieren wenn API-Limit erreicht
       if (e.message.includes("429")) notify("⚠️ API-Limit erreicht, versuche es später", "error");
     } finally {
